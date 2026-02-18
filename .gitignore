@@ -1,2 +1,4 @@
 # Ignore all .drawio.png files
 *.drawio.png
+*.drawio
+*.drawio.bkp
