@@ -28,14 +28,24 @@ class Properties extends Model
     ];
 
     protected $casts = [
-        'images' => 'array', // Cast images to an array
+        'images' => 'array',
+        'price' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
     ];
 
-    /**
-     * Get the user that owns the property.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function rentalAgreements()
+    {
+        return $this->hasMany(RentalAgreement::class, 'property_id');
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'property_id');
     }
 }
