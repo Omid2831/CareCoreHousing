@@ -110,7 +110,12 @@ class PropertyController extends Controller
 
     public function myProperties(Request $request)
     {
-        $properties = Properties::latest()
+        $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+        ]);
+
+        $properties = Properties::where('user_id', $request->input('user_id'))
+            ->latest()
             ->paginate($request->input('per_page', 15));
 
         return response()->json($properties);
