@@ -6,9 +6,24 @@
  */
 
 class Endpoints {
-  static const String users = "/users";
-  static const String properties = "/properties";
-  static const String rentalAgreements = "/rental-agreements";
-  static const String favorites = "/favorites";
-  static const String notifications = "/notifications";
+  // Base URL for Android emulator - use 10.0.2.2 to reach host localhost
+  static const String baseUrl = 'http://10.0.2.2/api/v1';
+
+  // Properties endpoints
+  static const String properties = '/properties';
+  static const String property = '/properties'; // + id
+  static const String myProperties = '/my-properties';
+
+  // Favorites endpoints
+  static const String favorites = '/favorites';
+  
+
+  // Notifications endpoints
+  static const String notifications = '/notifications';
+  static const String unreadNotifications = '/notifications/unread';
+  static const String markAsRead = '/notifications'; // + id + /read
+  static const String markAllAsRead = '/notifications/read-all';
+
+  // Rental agreements endpoints
+  static const String rentalAgreements = '/rental-agreements';
 }
