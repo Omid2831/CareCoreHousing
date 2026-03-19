@@ -16,6 +16,7 @@ class PropertyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
         width: 260,
@@ -40,13 +41,15 @@ class PropertyCard extends StatelessWidget {
   }
 
   Widget _buildImage() {
+    final List<String> images = property.displayImageUrls;
+
     return Stack(
       children: [
         ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          child: property.imageUrls.isNotEmpty
+          child: images.isNotEmpty
               ? Image.network(
-                  property.imageUrls.first,
+                  images.first,
                   height: 160,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -217,7 +220,10 @@ class PropertyListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> images = property.displayImageUrls;
+
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -238,9 +244,9 @@ class PropertyListCard extends StatelessWidget {
               borderRadius: const BorderRadius.horizontal(
                 left: Radius.circular(16),
               ),
-              child: property.imageUrls.isNotEmpty
+              child: images.isNotEmpty
                   ? Image.network(
-                      property.imageUrls.first,
+                      images.first,
                       width: 110,
                       height: 110,
                       fit: BoxFit.cover,
