@@ -1,114 +1,90 @@
-# **Server (Laravel Backend)**
+# Server (Laravel Backend)
 
-This folder contains the backend API for **CareCoreHousing**, built with **Laravel**. It handles all core functionality such as authentication, property management, and communication with other services (AI recommendations, chat, etc.).
+This folder contains the backend API for CareCoreHousing.
 
----
+## Prerequisites
 
-## **Features**
+- Docker Desktop (recommended for this project)
+- WSL2 on Windows
+- Composer (only needed for non-Docker local run)
 
-* **User Authentication**
+## Recommended Run Method (Sail)
 
-  * Register, login, password reset
-  * JWT or Laravel Fortify for secure API access
+From `server/`:
 
-* **Property Management**
-
-  * CRUD operations for property listings
-  * Filter and search properties by location, price, type, etc.
-  * Manage user favorites
-
-* **Tenant ↔ Landlord Interaction**
-
-  * Submit rental applications
-  * Send inquiries (message relay goes through Node.js WebSocket server)
-
-* **Integration with AI Service(Optional)**
-
-  * Calls Python AI microservice for property recommendations
-
-* **Admin Features (Optional)**
-
-  * Moderate listings and users
-  * Generate reports
-
----
-
-## **Folder Structure**
-
-```
-server/
-├── app/           # Main application code (Models, Controllers, Services)
-├── routes/        # API route definitions
-├── database/      # Migrations, seeds, factories
-├── config/        # Configuration files
-├── tests/         # Unit and feature tests
-└── ...
-```
-
----
-
-## **Setup Instructions**
-
-1. **Clone the repo**
-
-```bash
-git clone <repo-url>
-cd CareCoreHousing/server
-```
-
-2. **Install dependencies**
+1. Install dependencies:
 
 ```bash
 composer install
 ```
 
-3. **Configure environment**
+1. Create environment file:
 
 ```bash
 cp .env.example .env
-# Update DB, API keys, and other settings
 ```
 
-4. **Generate app key**
+1. Start containers:
+
+```bash
+./vendor/bin/sail up -d
+```
+
+1. Generate app key:
+
+```bash
+./vendor/bin/sail artisan key:generate
+```
+
+1. Prepare database with seed data:
+
+```bash
+./vendor/bin/sail artisan migrate:fresh --seed
+```
+
+Backend API is then reachable from your host machine through Sail's exposed app port.
+
+## If `db:seed` Fails with Duplicate Email
+
+Run this command instead:
+
+```bash
+./vendor/bin/sail artisan migrate:fresh --seed
+```
+
+This resets tables and reseeds cleanly.
+
+## Stop Backend
+
+```bash
+./vendor/bin/sail down
+```
+
+## Non-Docker Local Run (Optional)
+
+Use this path only if Sail is not being used:
+
+1. Configure `.env` for local MySQL.
+
+1. Run:
 
 ```bash
 php artisan key:generate
-```
-
-5. **Run migrations**
-
-```bash
-php artisan migrate
-```
-
-6. **Start the server**
-
-```bash
+php artisan migrate --seed
 php artisan serve
 ```
 
-> The server will run on `http://localhost:8000` by default.
+## API Notes
 
----
+- Current API version prefix: `/api/v1`
+- Properties routes are defined in `routes/api.php`
+- Main listing endpoint used by client:
 
-## **API Documentation**
+```http
+GET /api/v1/properties
+```
 
-* All endpoints are prefixed with `/api/`
-* Example endpoints:
+## Development Tips
 
-  * `POST /api/register` – Create a new user
-  * `POST /api/login` – Authenticate user
-  * `GET /api/properties` – List properties
-  * `POST /api/properties` – Add a property
-* Use **Postman or Swagger** for testing and API docs.
-
----
-
-## **Notes**
-
-* Laravel communicates with:
-
-  * **Python AI service** for recommendations
-  * **Node.js WebSocket server** for real-time chat
-* Use **separate `.env` for each environment** (dev, staging, production)
-* Make sure the database is shared properly if using multiple services
+- If client is Android emulator, use `10.0.2.2` in Flutter API base URL to reach host backend.
+- Keep endpoint paths centralized in client `lib/api/endpoints.dart`.
