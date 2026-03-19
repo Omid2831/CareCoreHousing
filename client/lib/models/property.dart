@@ -16,6 +16,12 @@ class Property {
   final double? latitude;
   final double? longitude;
 
+  static const List<String> _defaultImages = <String>[
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c',
+    'https://images.unsplash.com/photo-1598228723793-52759bba239c',
+    'https://images.unsplash.com/photo-1518780664697-55e3ad937233',
+  ];
+
   const Property({
     required this.id,
     required this.title,
@@ -137,5 +143,47 @@ class Property {
       latitude: latitude,
       longitude: longitude,
     );
+  }
+
+  List<String> get displayImageUrls {
+    if (imageUrls.isNotEmpty) {
+      return imageUrls;
+    }
+
+    switch (type.toLowerCase()) {
+      case 'house':
+        return const <String>[
+          'https://images.unsplash.com/photo-1568605114967-8130f3a36994',
+          'https://images.unsplash.com/photo-1572120360610-d971b9d7767c',
+          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9',
+        ];
+      case 'apartment':
+      case 'condo':
+        return const <String>[
+          'https://images.unsplash.com/photo-1494526585095-c41746248156',
+          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688',
+          'https://images.unsplash.com/photo-1484154218962-a197022b5858',
+        ];
+      case 'townhouse':
+        return const <String>[
+          'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd',
+          'https://images.unsplash.com/photo-1513584684374-8bab748fbf90',
+          'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff',
+        ];
+      case 'studenthouse':
+        return const <String>[
+          'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267',
+          'https://images.unsplash.com/photo-1493809842364-78817add7ffb',
+          'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85',
+        ];
+      case 'commercial':
+        return const <String>[
+          'https://images.unsplash.com/photo-1497366754035-f200968a6e72',
+          'https://images.unsplash.com/photo-1497215842964-222b430dc094',
+          'https://images.unsplash.com/photo-1524758631624-e2822e304c36',
+        ];
+      default:
+        return _defaultImages;
+    }
   }
 }
