@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../api/property_api.dart';
 import '../models/property.dart';
+import 'property_details_screen.dart';
 import '../widgets/property_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -326,6 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final property = _featuredProperties[index];
           return PropertyCard(
             property: property,
+            onTap: () => _openPropertyDetails(property),
             onFavoriteToggle: (val) => setState(() {
               _featuredProperties[index] = property.copyWith(isFavorite: val);
             }),
@@ -404,6 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final property = _nearbyProperties[index];
             return PropertyListCard(
               property: property,
+              onTap: () => _openPropertyDetails(property),
               onFavoriteToggle: (val) => setState(() {
                 _nearbyProperties[index] = property.copyWith(isFavorite: val);
               }),
@@ -412,6 +415,25 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       const SliverToBoxAdapter(child: SizedBox(height: 24)),
     ];
+  }
+
+  Future<void> _openPropertyDetails(Property property) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PropertyDetailsScreen(
+          property: property,
+          onMessageOwner: () {
+            Navigator.of(context).pop();
+            setState(() => _selectedNavIndex = 3);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Message flow started for ${property.title}.'),
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   Widget _buildBottomNav() {
