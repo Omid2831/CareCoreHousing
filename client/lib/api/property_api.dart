@@ -33,22 +33,28 @@ class PropertyApi {
     );
 
     final List<dynamic> rawList = _extractPropertyList(response.data);
-
     return rawList
-        .map<Map<String, dynamic>?>((dynamic item) {
-          if (item is Map<String, dynamic>) {
-            return item;
-          }
-          if (item is Map) {
-            return item.map(
-              (dynamic key, dynamic value) => MapEntry(key.toString(), value),
-            );
-          }
-          return null;
-        })
+        .map(_toStringDynamicMap)
         .whereType<Map<String, dynamic>>()
         .map(Property.fromJson)
         .toList();
+  }
+
+  Future<Property> getPropertyById(int id) async {
+    final Response<dynamic> response = await _dio.get(
+      Endpoints.propertyById(id),
+    );
+
+    final Map<String, dynamic>? mapped = _toStringDynamicMap(response.data);
+    if (mapped == null) {
+      throw DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        message: 'Invalid property response format',
+      );
+    }
+
+    return Property.fromJson(mapped);
   }
 
   List<dynamic> _extractPropertyList(dynamic data) {
@@ -64,5 +70,17 @@ class PropertyApi {
     }
 
     return <dynamic>[];
+  }
+
+  Map<String, dynamic>? _toStringDynamicMap(dynamic item) {
+    if (item is Map<String, dynamic>) {
+      return item;
+    }
+    if (item is Map) {
+      return item.map(
+        (dynamic key, dynamic value) => MapEntry(key.toString(), value),
+      );
+    }
+    return null;
   }
 }
