@@ -4,6 +4,13 @@ import '../models/property.dart';
 import 'profile.dart';
 import 'property_details_screen.dart';
 import '../widgets/property_card.dart';
+import '../widgets/home_screen/app_header.dart';
+import '../widgets/home_screen/search_bar_widget.dart';
+import '../widgets/home_screen/category_selector.dart';
+import '../widgets/home_screen/section_title.dart';
+import '../widgets/home_screen/featured_properties_list.dart';
+import '../widgets/home_screen/nearby_properties_list.dart';
+import '../widgets/home_screen/placeholder_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,7 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProperties();
+    // Defer property loading to avoid blocking main thread
+    Future.microtask(() => _loadProperties());
   }
 
   Future<void> _loadProperties() async {
@@ -49,10 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final String search = _searchController.text.trim();
 
     try {
-      final List<Property> properties = await _propertyApi.getProperties(
-        type: type,
-        search: search.isEmpty ? null : search,
-      );
+      final List<Property> properties = await _propertyApi
+          .getProperties(type: type, search: search.isEmpty ? null : search)
+          .timeout(const Duration(seconds: 10));
 
       if (!mounted) {
         return;
@@ -69,7 +76,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('ERROR in _loadProperties: $e');
+      debugPrintStack(stackTrace: stack);
       if (!mounted) {
         return;
       }
@@ -102,27 +111,42 @@ class _HomeScreenState extends State<HomeScreen> {
         return SafeArea(
           child: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: _buildHeader()),
-              SliverToBoxAdapter(child: _buildSearchBar()),
-              SliverToBoxAdapter(child: _buildCategories()),
+              const SliverToBoxAdapter(child: AppHeader()),
+              SliverToBoxAdapter(
+                child: SearchBarWidget(
+                  controller: _searchController,
+                  onSearch: _loadProperties,
+                  onFilter: _loadProperties,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: CategorySelector(
+                  categories: _categories,
+                  selectedIndex: _selectedCategoryIndex,
+                  onCategorySelected: (index) {
+                    setState(() => _selectedCategoryIndex = index);
+                    _loadProperties();
+                  },
+                ),
+              ),
               ..._buildPropertyContent(),
             ],
           ),
         );
       case 1:
-        return _buildPlaceholderTab(
+        return const PlaceholderTab(
           icon: Icons.search,
           title: 'Search',
           subtitle: 'Use this tab to search homes.',
         );
       case 2:
-        return _buildPlaceholderTab(
+        return const PlaceholderTab(
           icon: Icons.favorite_border,
           title: 'Saved',
           subtitle: 'Your saved properties will show here.',
         );
       case 3:
-        return _buildPlaceholderTab(
+        return const PlaceholderTab(
           icon: Icons.chat_bubble_outline,
           title: 'Messages',
           subtitle: 'Your conversations will show here.',
@@ -134,273 +158,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget _buildPlaceholderTab({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 52, color: const Color(0xFF4F6FFF)),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A2E),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // PlaceholderTab now in widgets/placeholder_tab.dart
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              RichText(
-                text: const TextSpan(
-                  style: TextStyle(fontSize: 22, color: Color(0xFF1A1A2E)),
-                  children: [
-                    TextSpan(text: 'Find Your '),
-                    TextSpan(
-                      text: 'Dream Home',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF4F6FFF),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: const [
-                  Icon(Icons.location_on, size: 14, color: Colors.grey),
-                  SizedBox(width: 2),
-                  Text(
-                    'New York, USA',
-                    style: TextStyle(fontSize: 13, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Stack(
-            children: [
-              GestureDetector(
-                onTap: () {},
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.notifications_outlined,
-                    color: Color(0xFF4F6FFF),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.redAccent,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // AppHeader now in widgets/app_header.dart
 
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: _searchController,
-                onSubmitted: (_) => _loadProperties(),
-                decoration: InputDecoration(
-                  hintText: 'Search address, city, or type…',
-                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xFF4F6FFF),
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: _loadProperties,
-            child: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xFF4F6FFF),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(Icons.tune, color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // SearchBarWidget now in widgets/search_bar_widget.dart
 
-  Widget _buildCategories() {
-    return SizedBox(
-      height: 42,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (context, index) {
-          final selected = index == _selectedCategoryIndex;
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selectedCategoryIndex = index);
-              _loadProperties();
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              decoration: BoxDecoration(
-                color: selected ? const Color(0xFF4F6FFF) : Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: selected
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFF4F6FFF).withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ]
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 6,
-                        ),
-                      ],
-              ),
-              child: Text(
-                _categories[index],
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                  color: selected ? Colors.white : Colors.black87,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+  // CategorySelector now in widgets/category_selector.dart
 
-  Widget _buildSectionTitle(String title, {VoidCallback? onSeeAll}) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A2E),
-            ),
-          ),
-          GestureDetector(
-            onTap: onSeeAll,
-            child: const Text(
-              'See all',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF4F6FFF),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // SectionTitle now in widgets/section_title.dart
 
-  Widget _buildFeaturedList() {
-    return SizedBox(
-      height: 300,
-      child: ListView.builder(
-        padding: const EdgeInsets.only(left: 20),
-        scrollDirection: Axis.horizontal,
-        itemCount: _featuredProperties.length,
-        itemBuilder: (context, index) {
-          final property = _featuredProperties[index];
-          return PropertyCard(
-            property: property,
-            onTap: () => _openPropertyDetails(property),
-            onFavoriteToggle: (val) => setState(() {
-              _featuredProperties[index] = property.copyWith(isFavorite: val);
-            }),
-          );
-        },
-      ),
-    );
-  }
+  // FeaturedPropertiesList now in widgets/featured_properties_list.dart
 
   List<Widget> _buildPropertyContent() {
     if (_isLoading) {
@@ -457,26 +225,33 @@ class _HomeScreenState extends State<HomeScreen> {
     return <Widget>[
       if (_featuredProperties.isNotEmpty)
         SliverToBoxAdapter(
-          child: _buildSectionTitle('Featured Properties', onSeeAll: () {}),
+          child: SectionTitle(title: 'Featured Properties', onSeeAll: () {}),
         ),
       if (_featuredProperties.isNotEmpty)
-        SliverToBoxAdapter(child: _buildFeaturedList()),
-      if (_nearbyProperties.isNotEmpty)
         SliverToBoxAdapter(
-          child: _buildSectionTitle('Nearby Properties', onSeeAll: () {}),
+          child: FeaturedPropertiesList(
+            properties: _featuredProperties,
+            onTap: _openPropertyDetails,
+            onFavoriteToggle: (index, val) => setState(() {
+              _featuredProperties[index] = _featuredProperties[index].copyWith(
+                isFavorite: val,
+              );
+            }),
+          ),
         ),
       if (_nearbyProperties.isNotEmpty)
-        SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
-            final property = _nearbyProperties[index];
-            return PropertyListCard(
-              property: property,
-              onTap: () => _openPropertyDetails(property),
-              onFavoriteToggle: (val) => setState(() {
-                _nearbyProperties[index] = property.copyWith(isFavorite: val);
-              }),
+        SliverToBoxAdapter(
+          child: SectionTitle(title: 'Nearby Properties', onSeeAll: () {}),
+        ),
+      if (_nearbyProperties.isNotEmpty)
+        NearbyPropertiesList(
+          properties: _nearbyProperties,
+          onTap: _openPropertyDetails,
+          onFavoriteToggle: (index, val) => setState(() {
+            _nearbyProperties[index] = _nearbyProperties[index].copyWith(
+              isFavorite: val,
             );
-          }, childCount: _nearbyProperties.length),
+          }),
         ),
       const SliverToBoxAdapter(child: SizedBox(height: 24)),
     ];
