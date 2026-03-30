@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../api/property_api.dart';
 import '../models/property.dart';
+import 'profile.dart';
 import 'property_details_screen.dart';
 import '../widgets/property_card.dart';
 
@@ -90,23 +91,87 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FF),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeader()),
-            SliverToBoxAdapter(child: _buildSearchBar()),
-            SliverToBoxAdapter(child: _buildCategories()),
-            ..._buildPropertyContent(),
-          ],
+      body: _buildCurrentTabBody(),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildCurrentTabBody() {
+    switch (_selectedNavIndex) {
+      case 0:
+        return SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader()),
+              SliverToBoxAdapter(child: _buildSearchBar()),
+              SliverToBoxAdapter(child: _buildCategories()),
+              ..._buildPropertyContent(),
+            ],
+          ),
+        );
+      case 1:
+        return _buildPlaceholderTab(
+          icon: Icons.search,
+          title: 'Search',
+          subtitle: 'Use this tab to search homes.',
+        );
+      case 2:
+        return _buildPlaceholderTab(
+          icon: Icons.favorite_border,
+          title: 'Saved',
+          subtitle: 'Your saved properties will show here.',
+        );
+      case 3:
+        return _buildPlaceholderTab(
+          icon: Icons.chat_bubble_outline,
+          title: 'Messages',
+          subtitle: 'Your conversations will show here.',
+        );
+      case 4:
+        return const ProfileScreen();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildPlaceholderTab({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 52, color: const Color(0xFF4F6FFF)),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A2E),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+            ],
+          ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -455,7 +520,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
             blurRadius: 16,
-            offset: const Offset(0, -4),
+            offset: const Offset(0, -5),
           ),
         ],
       ),
