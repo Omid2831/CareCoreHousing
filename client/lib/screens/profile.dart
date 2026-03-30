@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/user_session.dart';
+import '../widgets/profile_screen/profile_header.dart';
+import '../widgets/profile_screen/section_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -57,9 +59,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          _buildProfileHeader(),
+          ProfileHeader(displayName: _displayName, displayEmail: _displayEmail),
           const SizedBox(height: 16),
-          _buildSectionCard(
+          SectionCard(
             title: 'Preferences',
             children: [
               SwitchListTile(
@@ -89,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          _buildSectionCard(
+          SectionCard(
             title: 'Security',
             children: [
               SwitchListTile(
@@ -109,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          _buildSectionCard(
+          SectionCard(
             title: 'Account',
             children: [
               ListTile(
@@ -139,10 +141,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (!context.mounted) {
                 return;
               }
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/login',
-                (route) => false,
-              );
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/login', (route) => false);
             },
             icon: const Icon(Icons.logout),
             label: const Text('Logout'),
@@ -157,67 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 28,
-            backgroundColor: Color(0xFF4F6FFF),
-            child: Icon(Icons.person, color: Colors.white, size: 30),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _displayName,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A1A2E),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                _displayEmail,
-                style: const TextStyle(fontSize: 13, color: Colors.black54),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // ProfileHeader now in widgets/profile_header.dart
 
-  Widget _buildSectionCard({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          ListTile(
-            title: Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF1A1A2E),
-              ),
-            ),
-          ),
-          ...children,
-        ],
-      ),
-    );
-  }
+  // SectionCard now in widgets/section_card.dart
 }
