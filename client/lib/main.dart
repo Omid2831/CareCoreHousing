@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'screens/authentication/login_screen.dart';
+import 'screens/authentication/register_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,7 +20,12 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      home: const HomeScreen(),
+      initialRoute: LoginScreen.routeName,
+      routes: {
+        LoginScreen.routeName: (_) => const LoginScreen(),
+        RegisterScreen.routeName: (_) => const RegisterScreen(),
+        '/home': (_) => const HomeScreen(),
+      },
     );
   }
 }
